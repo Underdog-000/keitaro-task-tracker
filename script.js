@@ -60,6 +60,51 @@ function saveApiKey() {
   localStorage.setItem('keitaro_api_key', key);
   alert('Ключ сохранён');
 }
+async function fetchCampaigns() {
+  const apiKey = localStorage.getItem('keitaro_api_key');
+  if (!apiKey) return;
+
+  try {
+    const res = await fetch('https://91.90.192.188/admin_api/v1/campaigns', {
+      headers: {
+        'Api-Key': apiKey,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!res.ok) throw new Error("Ошибка API");
+    const data = await res.json();
+
+    const select = document.getElementById('campaignSelect');
+    select.innerHTML = '';
+    data.forEach(c => {
+      const option = document.createElement('option');
+      option.value = c.id;
+      option.textContent = c.name;
+      select.appendChild(option);
+    });
+
+  } catch (err) {
+    alert("Ошибка подключения к Keitaro API. Возможно, проблема с CORS или сертификатом.");
+    console.error(err);
+  }
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value;
+  localStorage.setItem('keitaro_api_key', key);
+  alert('Ключ сохранён');
+  closeSettings();
+  fetchCampaigns(); // подгружаем кампании
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  // при загрузке страницы пробуем подгрузить кампании, если есть ключ
+  if (localStorage.getItem('keitaro_api_key')) {
+    fetchCampaigns();
+  }
+});
+
 
 function logout() {
   localStorage.removeItem('keitaro_api_key');
