@@ -1,60 +1,75 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Keitaro Task Tracker</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <aside class="sidebar">
-    <h2>Трекер</h2>
-    <button onclick="switchSection('tasks')">Задачи</button>
-    <button onclick="switchSection('reports')">Отчёты</button>
-    <button onclick="openSettings()">⚙️ Настройки</button>
-  </aside>
-  <main class="main-content">
-    <div class="header">
-      <h1>Задачи</h1>
-      <button class="add-task-btn" onclick="openModal()">＋</button>
-    </div>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="logo">Трекер</div>
+      <nav>
+        <button onclick="switchView('tasks')">Задачи</button>
+        <button onclick="switchView('reports')">Отчёты</button>
+        <button onclick="openSettings()">⚙ Настройки</button>
+      </nav>
+    </aside>
 
-    <div id="task-list">
-      <h2>В работе</h2>
-      <div id="active-tasks"></div>
+    <main class="board">
+      <header class="board-header">
+        <h1>Задачи</h1>
+        <button class="add-btn" onclick="openModal()">＋</button>
+      </header>
 
-      <h2>Готово</h2>
-      <div id="done-tasks"></div>
-    </div>
-  </main>
+      <section class="task-columns">
+        <div class="task-column">
+          <div class="column-header" onclick="toggleColumn('workingTasks')">
+            🟡 В работе <span class="arrow">˅</span>
+          </div>
+          <div class="task-list" id="workingTasks"></div>
+        </div>
+        <div class="task-column">
+          <div class="column-header" onclick="toggleColumn('doneTasks')">
+            🟢 Готово <span class="arrow">˅</span>
+          </div>
+          <div class="task-list" id="doneTasks"></div>
+        </div>
+      </section>
+    </main>
+  </div>
 
-  <!-- Модалка новой задачи -->
-  <div id="taskModal" class="modal hidden">
+  <!-- Модальное окно создания задачи -->
+  <div class="modal hidden" id="taskModal">
     <div class="modal-content">
-      <h3>Новая задача</h3>
+      <h2>Новая задача</h2>
       <label>Название теста: <input type="text" id="testName" /></label>
-      <label>Кампания: 
+      <label>Кампания:
         <select id="campaignSelect">
           <option value="Кампания 1">Кампания 1</option>
           <option value="Кампания 2">Кампания 2</option>
         </select>
       </label>
-      <button onclick="startTask()">Старт</button>
-      <button onclick="closeModal()">Отмена</button>
+      <div class="modal-actions">
+        <button onclick="createTask()">Создать</button>
+        <button onclick="closeModal()">Отмена</button>
+      </div>
     </div>
   </div>
 
-  <!-- Модалка настроек -->
-  <div id="settingsModal" class="modal hidden">
+  <!-- Модальное окно настроек -->
+  <div class="modal hidden" id="settingsModal">
     <div class="modal-content">
-      <h3>Настройки</h3>
+      <h2>Настройки</h2>
       <label>API ключ Keitaro:
         <input type="text" id="apiKeyInput" />
       </label>
-      <button onclick="saveApiKey()">Сохранить</button>
-      <button onclick="logout()">Выйти</button>
-      <button onclick="closeSettings()">Закрыть</button>
+      <div class="modal-actions">
+        <button onclick="saveApiKey()">Сохранить</button>
+        <button onclick="logout()">Выход</button>
+        <button onclick="closeSettings()">Закрыть</button>
+      </div>
     </div>
   </div>
 
