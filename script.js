@@ -1,6 +1,4 @@
-
 let tasks = [];
-let currentTask = null;
 
 function openModal() {
   document.getElementById('taskModal').classList.remove('hidden');
@@ -15,12 +13,12 @@ function closeSettings() {
   document.getElementById('settingsModal').classList.add('hidden');
 }
 
-function startTask() {
+function createTask() {
   const name = document.getElementById('testName').value;
   const campaign = document.getElementById('campaignSelect').value;
-  const startTime = new Date().toLocaleTimeString();
+  const time = new Date().toLocaleTimeString();
 
-  const task = { name, campaign, startTime, done: false };
+  const task = { name, campaign, time, done: false };
   tasks.push(task);
   renderTasks();
   closeModal();
@@ -33,26 +31,28 @@ function completeTask(index) {
 }
 
 function renderTasks() {
-  const activeEl = document.getElementById('active-tasks');
-  const doneEl = document.getElementById('done-tasks');
-  activeEl.innerHTML = '';
+  const workingEl = document.getElementById('workingTasks');
+  const doneEl = document.getElementById('doneTasks');
+  workingEl.innerHTML = '';
   doneEl.innerHTML = '';
 
-  tasks.forEach((task, index) => {
+  tasks.forEach((task, i) => {
     const el = document.createElement('div');
-    el.textContent = `${task.name} (${task.campaign}) [${task.startTime}]`;
-
-    if (task.done) {
-      el.textContent += ` → ${task.endTime}`;
-      doneEl.appendChild(el);
-    } else {
-      const btn = document.createElement('button');
-      btn.textContent = 'Завершить';
-      btn.onclick = () => completeTask(index);
-      el.appendChild(btn);
-      activeEl.appendChild(el);
-    }
+    el.className = 'task-card';
+    el.innerHTML = `
+      <div><b>${task.name}</b><br/>${task.campaign}</div>
+      <div class="actions">
+        ${task.done ? `🕒 ${task.time} → ${task.endTime}` 
+                    : `<button onclick="completeTask(${i})">Завершить</button>`}
+      </div>
+    `;
+    task.done ? doneEl.appendChild(el) : workingEl.appendChild(el);
   });
+}
+
+function toggleColumn(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'none' ? 'flex' : 'none';
 }
 
 function saveApiKey() {
