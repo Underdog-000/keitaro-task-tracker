@@ -1,0 +1,67 @@
+
+body {
+  display: flex;
+  margin: 0;
+  font-family: sans-serif;
+  background: #1e1e2f;
+  color: white;
+}
+.sidebar {
+  width: 200px;
+  background: #151521;
+  padding: 20px;
+}
+.sidebar button {
+  display: block;
+  margin: 10px 0;
+  background: #333;
+  color: white;
+  border: none;
+  padding: 10px;
+  width: 100%;
+}
+.main-content {
+  flex: 1;
+  padding: 20px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.add-task-btn {
+  font-size: 24px;
+  padding: 5px 15px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+}
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.modal.hidden {
+  display: none;
+}
+.modal-content {
+  background: #2c2c3e;
+  padding: 20px;
+  border-radius: 10px;
+}
+label {
+  display: block;
+  margin: 10px 0;
+}
+input, select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+}

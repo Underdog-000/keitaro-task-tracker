@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keitaro Task Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <h2>Трекер</h2>
+    <button onclick="switchSection('tasks')">Задачи</button>
+    <button onclick="switchSection('reports')">Отчёты</button>
+    <button onclick="openSettings()">⚙️ Настройки</button>
+  </aside>
+  <main class="main-content">
+    <div class="header">
+      <h1>Задачи</h1>
+      <button class="add-task-btn" onclick="openModal()">＋</button>
+    </div>
+
+    <div id="task-list">
+      <h2>В работе</h2>
+      <div id="active-tasks"></div>
+
+      <h2>Готово</h2>
+      <div id="done-tasks"></div>
+    </div>
+  </main>
+
+  <!-- Модалка новой задачи -->
+  <div id="taskModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Новая задача</h3>
+      <label>Название теста: <input type="text" id="testName" /></label>
+      <label>Кампания: 
+        <select id="campaignSelect">
+          <option value="Кампания 1">Кампания 1</option>
+          <option value="Кампания 2">Кампания 2</option>
+        </select>
+      </label>
+      <button onclick="startTask()">Старт</button>
+      <button onclick="closeModal()">Отмена</button>
+    </div>
+  </div>
+
+  <!-- Модалка настроек -->
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Настройки</h3>
+      <label>API ключ Keitaro:
+        <input type="text" id="apiKeyInput" />
+      </label>
+      <button onclick="saveApiKey()">Сохранить</button>
+      <button onclick="logout()">Выйти</button>
+      <button onclick="closeSettings()">Закрыть</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
