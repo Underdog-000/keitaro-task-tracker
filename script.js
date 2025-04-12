@@ -65,7 +65,7 @@ async function fetchCampaigns() {
   if (!apiKey) return;
 
   try {
-    const res = await fetch('https://91.90.192.188/admin_api/v1/campaigns', {
+    const res = await fetch('https://forextradingpips.com/admin_api/v1/campaigns', {
       headers: {
         'Api-Key': apiKey,
         'Accept': 'application/json'
