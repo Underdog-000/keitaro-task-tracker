@@ -77,16 +77,20 @@ async function fetchCampaignsAndGroups() {
 function createTask() {
   const name = document.getElementById('testName').value;
   const group = document.getElementById('groupSelect').value;
+  const geo = document.getElementById('geoInput').value;
   const campaignRaw = document.getElementById('campaignInput').value;
   const [campaignId, campaignName] = campaignRaw.split(' — ');
   const startTime = getMoscowTimeString();
+  const startISO = new Date().toISOString();
 
   const task = {
     name,
     group,
+    geo,
     campaignId,
     campaignName,
     startTime,
+    startISO,
     done: false
   };
 
@@ -94,6 +98,7 @@ function createTask() {
   renderTasks();
   closeModal();
 }
+
 
 // ✅ Завершить задачу
 function completeTask(index) {
