@@ -18,7 +18,6 @@ function closeSettings() {
   document.getElementById('settingsModal').classList.add('hidden');
 }
 
-// 📥 Сохранить API ключ
 function saveApiKey() {
   const key = document.getElementById('apiKeyInput').value;
   localStorage.setItem('keitaro_api_key', key);
@@ -27,7 +26,6 @@ function saveApiKey() {
   fetchCampaignsAndGroups();
 }
 
-// 🔓 Выйти / удалить ключ
 function logout() {
   localStorage.removeItem('keitaro_api_key');
   alert('Ключ удалён');
@@ -35,7 +33,6 @@ function logout() {
   document.getElementById('campaignList').innerHTML = '';
 }
 
-// 🔄 Получаем кампании + уникальные группы
 async function fetchCampaignsAndGroups() {
   try {
     const res = await fetch('/api/campaigns');
@@ -43,7 +40,6 @@ async function fetchCampaignsAndGroups() {
     const data = await res.json();
     allCampaigns = data;
 
-    // 🧩 Уникальные группы
     const groupSet = new Set();
     data.forEach(c => {
       if (c.group) groupSet.add(c.group);
@@ -58,7 +54,6 @@ async function fetchCampaignsAndGroups() {
       groupSelect.appendChild(option);
     });
 
-    // 🔍 Кампании с автопоиском
     const datalist = document.getElementById('campaignList');
     datalist.innerHTML = '';
     data.forEach(c => {
@@ -73,7 +68,6 @@ async function fetchCampaignsAndGroups() {
   }
 }
 
-// 📋 Создать задачу
 function createTask() {
   const name = document.getElementById('testName').value;
   const group = document.getElementById('groupSelect').value;
@@ -99,34 +93,33 @@ function createTask() {
   closeModal();
 }
 
-
-// ✅ Завершить задачу
 async function completeTask(index) {
   const task = tasks[index];
   const endTime = getMoscowTimeString();
   const endISO = new Date().toISOString();
 
-  // Получаем отчёт из Keitaro
-  const res = await fetch('/api/report', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      campaignId: task.campaignId,
-      from: task.startISO,
-      to: endISO
-    })
-  });
+  try {
+    const res = await fetch('/api/report', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        campaignId: task.campaignId,
+        from: task.startISO,
+        to: endISO
+      })
+    });
 
-  const report = await res.json();
+    const report = await res.json();
 
-  // Сохраняем
-  tasks[index].done = true;
-  tasks[index].endTime = endTime;
-  tasks[index].report = report;
-  renderTasks();
+    tasks[index].done = true;
+    tasks[index].endTime = endTime;
+    tasks[index].report = report;
+    renderTasks();
+  } catch (err) {
+    console.error("Ошибка при завершении задачи:", err);
+  }
 }
 
-// 🧱 Отрисовка задач
 function renderTasks() {
   const workingEl = document.getElementById('workingTasks');
   const doneEl = document.getElementById('doneTasks');
@@ -137,7 +130,6 @@ function renderTasks() {
     const el = document.createElement('div');
     el.className = 'task-card';
 
-    // ⏱ Базовая инфа по задаче
     let html = `
       <div><b>${task.name}</b><br/>
            Группа: ${task.group}<br/>
@@ -146,12 +138,11 @@ function renderTasks() {
       </div>
       <div class="actions">
         ${task.done
-          ? `🕒 ${task.startTime} → ${task.endTime}`
+          ? `🕒 ${task.startTime} → ${task.endTime || '—'}`
           : `<button onclick="completeTask(${i})">Завершить</button>`}
       </div>
     `;
 
-    // 📊 Вставка отчёта, если есть
     if (task.done && task.report && task.report.rows) {
       html += `<details><summary>📊 Отчёт</summary><div style="font-size: 0.9em; padding-top: 8px;">`;
 
@@ -175,17 +166,25 @@ function renderTasks() {
     }
 
     el.innerHTML = html;
-    task.done ? doneEl.appendChild(el) : workingEl.appendChild(el);
+    if (task.done) {
+      doneEl.appendChild(el);
+      console.log(`✅ "${task.name}" → в Готово`);
+    } else {
+      workingEl.appendChild(el);
+      console.log(`⏳ "${task.name}" → в Работе`);
+    }
   });
 }
 
-// ⬇️ Скрыть/раскрыть колонки
+// ⬇️ Раскрытие по ID (фиксированное)
 function toggleColumn(id) {
   const el = document.getElementById(id);
-  el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+  if (!el) return;
+  const isHidden = getComputedStyle(el).display === 'none';
+  el.style.display = isHidden ? 'flex' : 'none';
 }
 
-// ▶️ Автозагрузка при старте страницы
+// ▶️ При старте
 window.addEventListener('DOMContentLoaded', () => {
   const storedKey = localStorage.getItem('keitaro_api_key');
   if (storedKey) {
