@@ -101,9 +101,28 @@ function createTask() {
 
 
 // ✅ Завершить задачу
-function completeTask(index) {
+async function completeTask(index) {
+  const task = tasks[index];
+  const endTime = getMoscowTimeString();
+  const endISO = new Date().toISOString();
+
+  // Получаем отчёт из Keitaro
+  const res = await fetch('/api/report', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      campaignId: task.campaignId,
+      from: task.startISO,
+      to: endISO
+    })
+  });
+
+  const report = await res.json();
+
+  // Сохраняем
   tasks[index].done = true;
-  tasks[index].endTime = getMoscowTimeString();
+  tasks[index].endTime = endTime;
+  tasks[index].report = report;
   renderTasks();
 }
 
@@ -117,9 +136,12 @@ function renderTasks() {
   tasks.forEach((task, i) => {
     const el = document.createElement('div');
     el.className = 'task-card';
-    el.innerHTML = `
+
+    // ⏱ Базовая инфа по задаче
+    let html = `
       <div><b>${task.name}</b><br/>
            Группа: ${task.group}<br/>
+           Гео: ${task.geo}<br/>
            Кампания: ${task.campaignName}
       </div>
       <div class="actions">
@@ -128,6 +150,31 @@ function renderTasks() {
           : `<button onclick="completeTask(${i})">Завершить</button>`}
       </div>
     `;
+
+    // 📊 Вставка отчёта, если есть
+    if (task.done && task.report && task.report.rows) {
+      html += `<details><summary>📊 Отчёт</summary><div style="font-size: 0.9em; padding-top: 8px;">`;
+
+      const total = task.report.summary;
+      html += `
+        <b>Кампания:</b><br/>
+        Спенд: $${total.cost} / Лиды: ${total.conversions}<br/>
+        CPL: $${(total.cost / total.conversions).toFixed(2)} / CR: ${total.cr}% / Аппрув: ${total.approve}%<br/><br/>
+        <b>Офферы:</b><br/>
+      `;
+
+      task.report.rows.forEach(r => {
+        const id = r.offer.id;
+        html += `🔹 [${id}] ${r.offer.name}<br/>
+          Лиды: ${r.conversions} / CR: ${r.cr}% / CPL: $${r.cpa} / Аппрув: ${r.approve}%<br/>
+          🔗 <a href="https://lponlineshop.site/admin/?object=offers.preview&id=${id}" target="_blank">Промо</a><br/><br/>
+        `;
+      });
+
+      html += `</div></details>`;
+    }
+
+    el.innerHTML = html;
     task.done ? doneEl.appendChild(el) : workingEl.appendChild(el);
   });
 }
