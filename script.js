@@ -167,16 +167,12 @@ function renderTasks() {
 
     el.innerHTML = html;
     if (task.done) {
-  doneEl.appendChild(el);
-  doneEl.style.display = 'flex'; // 👈 вручную раскрываем "Готово"
-  console.log(`✅ "${task.name}" → в Готово`);
-}
+      doneEl.appendChild(el);
+      console.log(`✅ "${task.name}" → в Готово`);
     } else {
-  workingEl.appendChild(el);
-  workingEl.style.display = 'flex'; // 👈 раскрываем "В работе", если задача есть
-  console.log(`⏳ "${task.name}" → в Работе`);
-}
-    
+      workingEl.appendChild(el);
+      console.log(`⏳ "${task.name}" → в Работе`);
+    }
   });
 }
 
