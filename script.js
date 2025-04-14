@@ -178,9 +178,8 @@ function renderTasks() {
 
 // ⬇️ Раскрытие по ID (фиксированное)
 function toggleColumn(id) {
-  function toggleColumn(id) {
   const el = document.getElementById(id);
-  if (el) el.classList.toggle('hidden-column');
+  if (!el) return;
   const isHidden = getComputedStyle(el).display === 'none';
   el.style.display = isHidden ? 'flex' : 'none';
 }
