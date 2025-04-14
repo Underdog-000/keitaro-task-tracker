@@ -143,58 +143,53 @@ function renderTasks() {
       </div>
     `;
 
-   if (task.done && task.report && task.report.rows) {
-  html += `<details><summary>📊 Отчёт</summary><div style="font-size: 0.9em; padding-top: 8px;">`;
+    if (task.done && task.report && task.report.rows) {
+      html += `<details><summary>📊 Отчёт</summary><div style="font-size: 0.9em; padding-top: 8px;">`;
 
-  const total = task.report.summary || {};
-  const conversions = total.conversions ?? 0;
-  const cost = total.cost ?? 0;
-  const cr = total.cr ?? '—';
-  const approve = total.approve ?? '—';
-  const cpl = conversions ? (cost / conversions).toFixed(2) : '—';
+      const total = task.report.summary || {};
+      const conversions = total.conversions ?? 0;
+      const cost = total.cost ?? 0;
+      const cr = total.cr ?? '—';
+      const approve = total.approve ?? '—';
+      const cpl = conversions ? (cost / conversions).toFixed(2) : '—';
 
-  html += `
-    <b>Кампания:</b><br/>
-    Спенд: $${cost} / Лиды: ${conversions}<br/>
-    CPL: $${cpl} / CR: ${cr}% / Аппрув: ${approve}%<br/><br/>
-    <b>Офферы:</b><br/>
-  `;
+      html += `
+        <b>Кампания:</b><br/>
+        Спенд: $${cost} / Лиды: ${conversions}<br/>
+        CPL: $${cpl} / CR: ${cr}% / Аппрув: ${approve}%<br/><br/>
+        <b>Офферы:</b><br/>
+      `;
 
-  task.report.rows.forEach(r => {
-    const id = r.offer?.id || '—';
+      task.report.rows.forEach(r => {
+        const rawName = r.offer?.name || '';
+        const idMatch = rawName.match(/\\[(\\d+)]/);
+        const id = idMatch ? idMatch[1] : null;
 
-    // Подгружаем имя, если отсутствует
-    if (!r.offer?.name && id !== '—') {
-      fetch(`/api/offerById?id=${id}`)
-        .then(res => res.json())
-        .then(data => {
-          r.offer.name = data.name || `Offer #${id}`;
-          renderTasks(); // повторный рендер всей задачи
-        })
-        .catch(err => {
-          console.warn(`Ошибка получения оффера ${id}:`, err);
-        });
+        if (id && (!r.offer.name || r.offer.name.includes('undefined') || r.offer.name.includes('#'))) {
+          fetch(`/api/offerById?id=${id}`)
+            .then(res => res.json())
+            .then(data => {
+              r.offer.name = data.name || `Offer #${id}`;
+              renderTasks();
+            })
+            .catch(err => {
+              console.warn(`Ошибка получения оффера ${id}:`, err);
+            });
+        }
+
+        const displayName = r.offer?.name || `Offer #${id || '—'}`;
+
+        html += `🔹 [${id || '—'}] ${displayName}<br/>
+          Лиды: ${r.conversions ?? 0} / CR: ${r.cr ?? 0}% / CPL: $${r.cpa ?? 0} / Аппрув: ${r.approve ?? 0}%<br/>
+          🔗 <a href="https://lponlineshop.site/admin/?object=offers.preview&id=${id || ''}" target="_blank">Промо</a><br/><br/>
+        `;
+      });
+
+      html += `</div></details>`;
     }
-
-    const name = r.offer?.name || `Offer #${id}`;
-
-    html += `🔹 [${id}] ${name}<br/>
-      Лиды: ${r.conversions ?? 0} / CR: ${r.cr ?? 0}% / CPL: $${r.cpa ?? 0} / Аппрув: ${r.approve ?? 0}%<br/>
-      🔗 <a href="https://lponlineshop.site/admin/?object=offers.preview&id=${id}" target="_blank">Промо</a><br/><br/>
-    `;
-  });
-
-  html += `</div></details>`;
-}
-
 
     el.innerHTML = html;
-
-    if (task.done) {
-      doneEl.appendChild(el);
-    } else {
-      workingEl.appendChild(el);
-    }
+    task.done ? doneEl.appendChild(el) : workingEl.appendChild(el);
   });
 }
 
