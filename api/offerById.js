@@ -1,14 +1,10 @@
 export default async function handler(req, res) {
   const { id } = req.query;
+  const KEITARO_URL = `https://lponlineshop.site/admin_api/v1/offers/${id}`;
   const apiKey = process.env.KEITARO_API_KEY;
-  const BASE_URL = 'https://lponlineshop.site/admin_api/v1';
-
-  if (!id || !apiKey) {
-    return res.status(400).json({ error: 'Missing offer ID or API key' });
-  }
 
   try {
-    const response = await fetch(`${BASE_URL}/offers/${id}`, {
+    const response = await fetch(KEITARO_URL, {
       headers: {
         'Api-Key': apiKey,
         'Accept': 'application/json'
@@ -16,14 +12,12 @@ export default async function handler(req, res) {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      return res.status(response.status).send(errorText);
+      return res.status(response.status).json({ error: 'Ошибка Keitaro API' });
     }
 
     const data = await response.json();
-    return res.status(200).json(data);
-
-  } catch (err) {
-    return res.status(500).json({ error: 'Ошибка запроса к Keitaro', details: err.message });
+    return res.status(200).json({ name: data.name });
+  } catch (error) {
+    return res.status(500).json({ error: 'Серверная ошибка при получении оффера' });
   }
 }
