@@ -9,6 +9,11 @@ export default async function handler(req, res) {
     }
   });
 
+  if (!response.ok) {
+    const error = await response.text();
+    return res.status(response.status).send(error);
+  }
+
   const data = await response.json();
   return res.status(200).json(data);
 }
