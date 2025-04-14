@@ -1,43 +1,9 @@
+let tasks = [];
+let allCampaigns = [];
+
 function getMoscowTimeString() {
   return new Date().toLocaleString("ru-RU", { timeZone: "Europe/Moscow" });
 }
-
-async function fetchCampaignGroups() {
-  try {
-    const res = await fetch('/api/campaignGroups');
-    const data = await res.json();
-
-    const select = document.getElementById('groupSelect');
-    select.innerHTML = '';
-    data.forEach(g => {
-      const option = document.createElement('option');
-      option.value = g.id;
-      option.textContent = g.name;
-      select.appendChild(option);
-    });
-  } catch (err) {
-    console.error("Ошибка загрузки групп:", err);
-  }
-}
-
-async function fetchCampaigns() {
-  try {
-    const res = await fetch('/api/campaigns');
-    const data = await res.json();
-
-    const datalist = document.getElementById('campaignList');
-    datalist.innerHTML = '';
-    data.forEach(c => {
-      const option = document.createElement('option');
-      option.value = `${c.id} — ${c.name}`;
-      datalist.appendChild(option);
-    });
-  } catch (err) {
-    console.error("Ошибка загрузки кампаний:", err);
-  }
-}
-
-let tasks = [];
 
 function openModal() {
   document.getElementById('taskModal').classList.remove('hidden');
@@ -58,27 +24,66 @@ function saveApiKey() {
   localStorage.setItem('keitaro_api_key', key);
   alert('Ключ сохранён');
   closeSettings();
-  fetchCampaigns();
+  fetchCampaignsAndGroups();
 }
 
 // 🔓 Выйти / удалить ключ
 function logout() {
   localStorage.removeItem('keitaro_api_key');
   alert('Ключ удалён');
-  document.getElementById('campaignSelect').innerHTML = '<option>Кампания 1</option>';
+  document.getElementById('groupSelect').innerHTML = '<option>—</option>';
+  document.getElementById('campaignList').innerHTML = '';
+}
+
+// 🔄 Получаем кампании + уникальные группы
+async function fetchCampaignsAndGroups() {
+  try {
+    const res = await fetch('/api/campaigns');
+    if (!res.ok) throw new Error("Ошибка API");
+    const data = await res.json();
+    allCampaigns = data;
+
+    // 🧩 Уникальные группы
+    const groupSet = new Set();
+    data.forEach(c => {
+      if (c.group) groupSet.add(c.group);
+    });
+
+    const groupSelect = document.getElementById('groupSelect');
+    groupSelect.innerHTML = '';
+    Array.from(groupSet).forEach(g => {
+      const option = document.createElement('option');
+      option.value = g;
+      option.textContent = g;
+      groupSelect.appendChild(option);
+    });
+
+    // 🔍 Кампании с автопоиском
+    const datalist = document.getElementById('campaignList');
+    datalist.innerHTML = '';
+    data.forEach(c => {
+      const option = document.createElement('option');
+      option.value = `${c.id} — ${c.name}`;
+      datalist.appendChild(option);
+    });
+
+  } catch (err) {
+    alert("Ошибка при получении кампаний/групп");
+    console.error(err);
+  }
 }
 
 // 📋 Создать задачу
 function createTask() {
   const name = document.getElementById('testName').value;
-  const groupId = document.getElementById('groupSelect').value;
+  const group = document.getElementById('groupSelect').value;
   const campaignRaw = document.getElementById('campaignInput').value;
   const [campaignId, campaignName] = campaignRaw.split(' — ');
   const startTime = getMoscowTimeString();
 
   const task = {
     name,
-    groupId,
+    group,
     campaignId,
     campaignName,
     startTime,
@@ -90,11 +95,10 @@ function createTask() {
   closeModal();
 }
 
-
 // ✅ Завершить задачу
 function completeTask(index) {
   tasks[index].done = true;
-  tasks[index].endTime = new Date().toLocaleTimeString();
+  tasks[index].endTime = getMoscowTimeString();
   renderTasks();
 }
 
@@ -109,10 +113,14 @@ function renderTasks() {
     const el = document.createElement('div');
     el.className = 'task-card';
     el.innerHTML = `
-      <div><b>${task.name}</b><br/>${task.campaignName}</div>
+      <div><b>${task.name}</b><br/>
+           Группа: ${task.group}<br/>
+           Кампания: ${task.campaignName}
+      </div>
       <div class="actions">
-        ${task.done ? `🕒 ${task.time} → ${task.endTime}` 
-                    : `<button onclick="completeTask(${i})">Завершить</button>`}
+        ${task.done
+          ? `🕒 ${task.startTime} → ${task.endTime}`
+          : `<button onclick="completeTask(${i})">Завершить</button>`}
       </div>
     `;
     task.done ? doneEl.appendChild(el) : workingEl.appendChild(el);
@@ -125,35 +133,11 @@ function toggleColumn(id) {
   el.style.display = el.style.display === 'none' ? 'flex' : 'none';
 }
 
-// 🌐 Получить список кампаний из serverless-функции
-async function fetchCampaigns() {
-  try {
-    const res = await fetch('/api/campaigns');
-    if (!res.ok) throw new Error("Ошибка API");
-    const data = await res.json();
-
-    const select = document.getElementById('campaignSelect');
-    select.innerHTML = '';
-    data.forEach(c => {
-      const option = document.createElement('option');
-      option.value = c.id;
-      option.textContent = c.name;
-      select.appendChild(option);
-    });
-
-  } catch (err) {
-    alert("Ошибка при получении кампаний");
-    console.error(err);
-  }
-}
-
 // ▶️ Автозагрузка при старте страницы
 window.addEventListener('DOMContentLoaded', () => {
   const storedKey = localStorage.getItem('keitaro_api_key');
   if (storedKey) {
     document.getElementById('apiKeyInput').value = storedKey;
-    fetchCampaignGroups();
-    fetchCampaigns();
+    fetchCampaignsAndGroups();
   }
 });
-
