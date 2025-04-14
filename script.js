@@ -144,35 +144,34 @@ function renderTasks() {
     `;
 
     if (task.done && task.report && task.report.rows) {
-  html += `<details><summary>📊 Отчёт</summary><div style="font-size: 0.9em; padding-top: 8px;">`;
+      html += `<details><summary>📊 Отчёт</summary><div style="font-size: 0.9em; padding-top: 8px;">`;
 
-  const total = task.report.summary || {};
-  const conversions = total.conversions ?? 0;
-  const cost = total.cost ?? 0;
-  const cr = total.cr ?? '—';
-  const approve = total.approve ?? '—';
-  const cpl = conversions ? (cost / conversions).toFixed(2) : '—';
+      const total = task.report.summary || {};
+      const conversions = total.conversions ?? 0;
+      const cost = total.cost ?? 0;
+      const cr = total.cr ?? '—';
+      const approve = total.approve ?? '—';
+      const cpl = conversions ? (cost / conversions).toFixed(2) : '—';
 
-  html += `
-    <b>Кампания:</b><br/>
-    Спенд: $${cost} / Лиды: ${conversions}<br/>
-    CPL: $${cpl} / CR: ${cr}% / Аппрув: ${approve}%<br/><br/>
-    <b>Офферы:</b><br/>
-  `;
+      html += `
+        <b>Кампания:</b><br/>
+        Спенд: $${cost} / Лиды: ${conversions}<br/>
+        CPL: $${cpl} / CR: ${cr}% / Аппрув: ${approve}%<br/><br/>
+        <b>Офферы:</b><br/>
+      `;
 
-  task.report.rows.forEach(r => {
-    const id = r.offer?.id || '—';
-    const name = `Offer #${id}`;
+      task.report.rows.forEach(r => {
+        const id = r.offer?.id || '—';
+        const name = `Offer #${id}`;
 
-    html += `🔹 [${id}] ${name}<br/>
-      Лиды: ${r.conversions ?? 0} / CR: ${r.cr ?? 0}% / CPL: $${r.cpa ?? 0} / Аппрув: ${r.approve ?? 0}%<br/>
-      🔗 <a href="https://lponlineshop.site/admin/?object=offers.preview&id=${id}" target="_blank">Промо</a><br/><br/>
-    `;
-  });
+        html += `🔹 [${id}] ${name}<br/>
+          Лиды: ${r.conversions ?? 0} / CR: ${r.cr ?? 0}% / CPL: $${r.cpa ?? 0} / Аппрув: ${r.approve ?? 0}%<br/>
+          🔗 <a href="https://lponlineshop.site/admin/?object=offers.preview&id=${id}" target="_blank">Промо</a><br/><br/>
+        `;
+      });
 
-  html += `</div></details>`;
-}
-
+      html += `</div></details>`;
+    }
 
     el.innerHTML = html;
     task.done ? doneEl.appendChild(el) : workingEl.appendChild(el);
