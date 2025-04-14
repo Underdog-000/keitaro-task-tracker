@@ -1,3 +1,4 @@
+// script.js
 let tasks = [];
 let allCampaigns = [];
 
@@ -89,7 +90,7 @@ function createTask() {
   };
 
   tasks.push(task);
-  renderTasks();
+  renderTask(task, 'workingTasks');
   closeModal();
 }
 
@@ -111,9 +112,9 @@ async function completeTask(index) {
 
     const report = await res.json();
 
-    tasks[index].done = true;
-    tasks[index].endTime = endTime;
-    tasks[index].report = report;
+    task.done = true;
+    task.endTime = endTime;
+    task.report = report;
     renderTasks();
   } catch (err) {
     console.error("Ошибка при завершении задачи:", err);
@@ -121,61 +122,60 @@ async function completeTask(index) {
 }
 
 function renderTasks() {
-  const workingEl = document.getElementById('workingTasks');
-  const doneEl = document.getElementById('doneTasks');
-  workingEl.innerHTML = '';
-  doneEl.innerHTML = '';
+  document.getElementById('workingTasks').innerHTML = '';
+  document.getElementById('doneTasks').innerHTML = '';
+  tasks.forEach(task => renderTask(task, task.done ? 'doneTasks' : 'workingTasks'));
+}
 
-  tasks.forEach((task, i) => {
-    const el = document.createElement('div');
-    el.className = 'task-card';
+function renderTask(task, columnId = 'workingTasks') {
+  const container = document.getElementById(columnId);
+  const el = document.createElement('div');
+  el.className = 'task-card';
 
-    let html = `
-      <div><b>${task.name}</b><br/>
-           Группа: ${task.group}<br/>
-           Гео: ${task.geo}<br/>
-           Кампания: ${task.campaignName}
-      </div>
-      <div class="actions">
-        ${task.done
-          ? `🕒 ${task.startTime} → ${task.endTime || '—'}`
-          : `<button onclick="completeTask(${i})">Завершить</button>`}
-      </div>
+  let html = `
+    <div><b>${task.name}</b><br/>
+         Группа: ${task.group}<br/>
+         Гео: ${task.geo}<br/>
+         Кампания: ${task.campaignName}
+    </div>
+    <div class="actions">
+      ${task.done
+        ? `🕒 ${task.startTime} → ${task.endTime || '—'}`
+        : `<button onclick="completeTask(${tasks.indexOf(task)})">Завершить</button>`}
+    </div>
+  `;
+
+  if (task.done && task.report && task.report.rows) {
+    html += `<details><summary>📊 Отчёт</summary><div style="font-size: 0.9em; padding-top: 8px;">`;
+
+    const total = task.report.summary || {};
+    const conversions = total.conversions ?? 0;
+    const cost = total.cost ?? 0;
+    const cr = total.cr ?? '—';
+    const approve = total.approve ?? '—';
+    const cpl = conversions ? (cost / conversions).toFixed(2) : '—';
+
+    html += `
+      <b>Кампания:</b><br/>
+      Спенд: $${cost} / Лиды: ${conversions}<br/>
+      CPL: $${cpl} / CR: ${cr}% / Аппрув: ${approve}%<br/><br/>
+      <b>Офферы:</b><br/>
     `;
 
-    if (task.done && task.report && task.report.rows) {
-      html += `<details><summary>📊 Отчёт</summary><div style="font-size: 0.9em; padding-top: 8px;">`;
-
-      const total = task.report.summary || {};
-      const conversions = total.conversions ?? 0;
-      const cost = total.cost ?? 0;
-      const cr = total.cr ?? '—';
-      const approve = total.approve ?? '—';
-      const cpl = conversions ? (cost / conversions).toFixed(2) : '—';
-
-      html += `
-        <b>Кампания:</b><br/>
-        Спенд: $${cost} / Лиды: ${conversions}<br/>
-        CPL: $${cpl} / CR: ${cr}% / Аппрув: ${approve}%<br/><br/>
-        <b>Офферы:</b><br/>
+    task.report.rows.forEach(r => {
+      const id = r.offer?.id || '—';
+      const name = r.offer?.name || `Offer #${id}`;
+      html += `🔹 [${id}] ${name}<br/>
+        Лиды: ${r.conversions ?? 0} / CR: ${r.cr ?? 0}% / CPL: $${r.cpa ?? 0} / Аппрув: ${r.approve ?? 0}%<br/>
+        🔗 <a href="https://lponlineshop.site/admin/?object=offers.preview&id=${id}" target="_blank">Промо</a><br/><br/>
       `;
+    });
 
-      task.report.rows.forEach(r => {
-        const id = r.offer?.id || '—';
-        const name = `Offer #${id}`;
+    html += `</div></details>`;
+  }
 
-        html += `🔹 [${id}] ${name}<br/>
-          Лиды: ${r.conversions ?? 0} / CR: ${r.cr ?? 0}% / CPL: $${r.cpa ?? 0} / Аппрув: ${r.approve ?? 0}%<br/>
-          🔗 <a href="https://lponlineshop.site/admin/?object=offers.preview&id=${id}" target="_blank">Промо</a><br/><br/>
-        `;
-      });
-
-      html += `</div></details>`;
-    }
-
-    el.innerHTML = html;
-    task.done ? doneEl.appendChild(el) : workingEl.appendChild(el);
-  });
+  el.innerHTML = html;
+  container.appendChild(el);
 }
 
 function toggleColumn(id) {
