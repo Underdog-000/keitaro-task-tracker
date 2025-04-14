@@ -1,10 +1,13 @@
 export default async function handler(req, res) {
   const { id } = req.query;
-  const KEITARO_URL = `https://lponlineshop.site/admin_api/v1/offers/${id}`;
   const apiKey = process.env.KEITARO_API_KEY;
 
+  if (!id) {
+    return res.status(400).json({ error: 'Не указан ID оффера' });
+  }
+
   try {
-    const response = await fetch(KEITARO_URL, {
+    const response = await fetch(`https://lponlineshop.site/admin_api/v1/offers/${id}`, {
       headers: {
         'Api-Key': apiKey,
         'Accept': 'application/json'
@@ -12,7 +15,7 @@ export default async function handler(req, res) {
     });
 
     if (!response.ok) {
-      return res.status(response.status).json({ error: 'Ошибка Keitaro API' });
+      return res.status(response.status).json({ error: 'Ошибка при получении оффера' });
     }
 
     const data = await response.json();
