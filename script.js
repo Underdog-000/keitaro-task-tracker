@@ -146,18 +146,25 @@ function renderTasks() {
     if (task.done && task.report && task.report.rows) {
       html += `<details><summary>📊 Отчёт</summary><div style="font-size: 0.9em; padding-top: 8px;">`;
 
-      const total = task.report.summary;
+      const total = task.report.summary || {};
+      const conversions = total.conversions ?? 0;
+      const cost = total.cost ?? 0;
+      const cr = total.cr ?? '—';
+      const approve = total.approve ?? '—';
+      const cpl = conversions ? (cost / conversions).toFixed(2) : '—';
+
       html += `
         <b>Кампания:</b><br/>
-        Спенд: $${total.cost} / Лиды: ${total.conversions}<br/>
-        CPL: $${(total.cost / total.conversions).toFixed(2)} / CR: ${total.cr}% / Аппрув: ${total.approve}%<br/><br/>
+        Спенд: $${cost} / Лиды: ${conversions}<br/>
+        CPL: $${cpl} / CR: ${cr}% / Аппрув: ${approve}%<br/><br/>
         <b>Офферы:</b><br/>
       `;
 
       task.report.rows.forEach(r => {
-        const id = r.offer.id;
-        html += `🔹 [${id}] ${r.offer.name}<br/>
-          Лиды: ${r.conversions} / CR: ${r.cr}% / CPL: $${r.cpa} / Аппрув: ${r.approve}%<br/>
+        const id = r.offer?.id || '—';
+        const name = r.offer?.name || '—';
+        html += `🔹 [${id}] ${name}<br/>
+          Лиды: ${r.conversions ?? 0} / CR: ${r.cr ?? '—'}% / CPL: $${r.cpa ?? '—'} / Аппрув: ${r.approve ?? '—'}%<br/>
           🔗 <a href="https://lponlineshop.site/admin/?object=offers.preview&id=${id}" target="_blank">Промо</a><br/><br/>
         `;
       });
@@ -166,6 +173,7 @@ function renderTasks() {
     }
 
     el.innerHTML = html;
+
     if (task.done) {
       doneEl.appendChild(el);
       console.log(`✅ "${task.name}" → в Готово`);
@@ -176,7 +184,6 @@ function renderTasks() {
   });
 }
 
-// ⬇️ Раскрытие по ID (фиксированное)
 function toggleColumn(id) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -184,7 +191,6 @@ function toggleColumn(id) {
   el.style.display = isHidden ? 'flex' : 'none';
 }
 
-// ▶️ При старте
 window.addEventListener('DOMContentLoaded', () => {
   const storedKey = localStorage.getItem('keitaro_api_key');
   if (storedKey) {
