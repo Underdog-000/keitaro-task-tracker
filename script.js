@@ -1,3 +1,42 @@
+function getMoscowTimeString() {
+  return new Date().toLocaleString("ru-RU", { timeZone: "Europe/Moscow" });
+}
+
+async function fetchCampaignGroups() {
+  try {
+    const res = await fetch('/api/campaignGroups');
+    const data = await res.json();
+
+    const select = document.getElementById('groupSelect');
+    select.innerHTML = '';
+    data.forEach(g => {
+      const option = document.createElement('option');
+      option.value = g.id;
+      option.textContent = g.name;
+      select.appendChild(option);
+    });
+  } catch (err) {
+    console.error("Ошибка загрузки групп:", err);
+  }
+}
+
+async function fetchCampaigns() {
+  try {
+    const res = await fetch('/api/campaigns');
+    const data = await res.json();
+
+    const datalist = document.getElementById('campaignList');
+    datalist.innerHTML = '';
+    data.forEach(c => {
+      const option = document.createElement('option');
+      option.value = `${c.id} — ${c.name}`;
+      datalist.appendChild(option);
+    });
+  } catch (err) {
+    console.error("Ошибка загрузки кампаний:", err);
+  }
+}
+
 let tasks = [];
 
 function openModal() {
@@ -32,15 +71,25 @@ function logout() {
 // 📋 Создать задачу
 function createTask() {
   const name = document.getElementById('testName').value;
-  const campaignId = document.getElementById('campaignSelect').value;
-  const campaignName = document.getElementById('campaignSelect').selectedOptions[0].textContent;
-  const time = new Date().toLocaleTimeString();
+  const groupId = document.getElementById('groupSelect').value;
+  const campaignRaw = document.getElementById('campaignInput').value;
+  const [campaignId, campaignName] = campaignRaw.split(' — ');
+  const startTime = getMoscowTimeString();
 
-  const task = { name, campaignId, campaignName, time, done: false };
+  const task = {
+    name,
+    groupId,
+    campaignId,
+    campaignName,
+    startTime,
+    done: false
+  };
+
   tasks.push(task);
   renderTasks();
   closeModal();
 }
+
 
 // ✅ Завершить задачу
 function completeTask(index) {
@@ -103,6 +152,8 @@ window.addEventListener('DOMContentLoaded', () => {
   const storedKey = localStorage.getItem('keitaro_api_key');
   if (storedKey) {
     document.getElementById('apiKeyInput').value = storedKey;
+    fetchCampaignGroups();
     fetchCampaigns();
   }
 });
+
