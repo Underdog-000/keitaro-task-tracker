@@ -161,13 +161,29 @@ function renderTasks() {
       `;
 
       task.report.rows.forEach(r => {
-        const id = r.offer?.id || '—';
-        const name = r.offer?.name || '—';
-        html += `🔹 [${id}] ${name}<br/>
-          Лиды: ${r.conversions ?? 0} / CR: ${r.cr ?? '—'}% / CPL: $${r.cpa ?? '—'} / Аппрув: ${r.approve ?? '—'}%<br/>
-          🔗 <a href="https://lponlineshop.site/admin/?object=offers.preview&id=${id}" target="_blank">Промо</a><br/><br/>
-        `;
+  const id = r.offer?.id || '—';
+
+  // Подгружаем имя, если отсутствует
+  if (!r.offer?.name && id !== '—') {
+    fetch(`/api/offerById?id=${id}`)
+      .then(res => res.json())
+      .then(data => {
+        r.offer.name = data.name || `Offer #${id}`;
+        renderTasks(); // повторный рендер всей задачи
+      })
+      .catch(err => {
+        console.warn(`Ошибка получения оффера ${id}:`, err);
       });
+  }
+
+  const name = r.offer?.name || `Offer #${id}`;
+
+  html += `🔹 [${id}] ${name}<br/>
+    Лиды: ${r.conversions ?? 0} / CR: ${r.cr ?? 0}% / CPL: $${r.cpa ?? 0} / Аппрув: ${r.approve ?? 0}%<br/>
+    🔗 <a href="https://lponlineshop.site/admin/?object=offers.preview&id=${id}" target="_blank">Промо</a><br/><br/>
+  `;
+});
+
 
       html += `</div></details>`;
     }
