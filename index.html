@@ -41,22 +41,32 @@
   </div>
 
   <!-- Модальное окно создания задачи -->
-  <div class="modal hidden" id="taskModal">
-    <div class="modal-content">
-      <h2>Новая задача</h2>
-      <label>Название теста: <input type="text" id="testName" /></label>
-      <label>Кампания:
-        <select id="campaignSelect">
-          <option value="Кампания 1">Кампания 1</option>
-          <option value="Кампания 2">Кампания 2</option>
-        </select>
-      </label>
-      <div class="modal-actions">
-        <button onclick="createTask()">Создать</button>
-        <button onclick="closeModal()">Отмена</button>
-      </div>
+<div class="modal hidden" id="taskModal">
+  <div class="modal-content">
+    <h2>Новая задача</h2>
+
+    <label>Название теста:
+      <input type="text" id="testName" />
+    </label>
+
+    <label>Группа кампаний:
+      <select id="groupSelect">
+        <option>Загрузка...</option>
+      </select>
+    </label>
+
+    <label>Кампания:
+      <input type="text" id="campaignInput" list="campaignList" placeholder="Поиск по названию или ID..." />
+      <datalist id="campaignList"></datalist>
+    </label>
+
+    <div class="modal-actions">
+      <button onclick="createTask()">Создать</button>
+      <button onclick="closeModal()">Отмена</button>
     </div>
   </div>
+</div>
+
 
   <!-- Модальное окно настроек -->
   <div class="modal hidden" id="settingsModal">
