@@ -176,7 +176,7 @@ function renderTasks() {
   workingEl.style.display = 'flex'; // 👈 раскрываем "В работе", если задача есть
   console.log(`⏳ "${task.name}" → в Работе`);
 }
-    }
+    
   });
 }
 
