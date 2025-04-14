@@ -151,3 +151,30 @@ body {
   gap: 10px;
   justify-content: flex-end;
 }
+/* 👇 Гарантируем, что task-lists не схлопываются */
+#workingTasks, #doneTasks {
+  min-height: 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 👇 Аккуратный стиль для <details> блока отчета */
+.task-card details {
+  background: #444456;
+  border-radius: 6px;
+  margin-top: 8px;
+  padding: 8px;
+  color: #e0e0e0;
+}
+
+.task-card summary {
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.task-card a {
+  color: #4cafef;
+  text-decoration: underline;
+}
