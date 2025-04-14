@@ -160,30 +160,27 @@ function renderTasks() {
         <b>Офферы:</b><br/>
       `;
 
-      task.report.rows.forEach(r => {
-  const id = r.offer?.id || '—';
+      task.report.rows.forEach((r, rowIndex) => {
+        const id = r.offer?.id;
+        if (id && !r.offer?.name) {
+          fetch(`/api/offerById?id=${id}`)
+            .then(res => res.json())
+            .then(data => {
+              if (data?.name) {
+                r.offer.name = data.name;
+                task.report.rows[rowIndex].offer.name = data.name;
+                renderTasks();
+              }
+            })
+            .catch(err => console.warn(`Ошибка получения оффера ${id}:`, err));
+        }
 
-  // Подгружаем имя, если отсутствует
-  if (!r.offer?.name && id !== '—') {
-    fetch(`/api/offerById?id=${id}`)
-      .then(res => res.json())
-      .then(data => {
-        r.offer.name = data.name || `Offer #${id}`;
-        renderTasks(); // повторный рендер всей задачи
-      })
-      .catch(err => {
-        console.warn(`Ошибка получения оффера ${id}:`, err);
+        const name = r.offer?.name || `Offer #${id}`;
+        html += `🔹 [${id}] ${name}<br/>
+          Лиды: ${r.conversions ?? 0} / CR: ${r.cr ?? 0}% / CPL: $${r.cpa ?? 0} / Аппрув: ${r.approve ?? 0}%<br/>
+          🔗 <a href="https://lponlineshop.site/admin/?object=offers.preview&id=${id}" target="_blank">Промо</a><br/><br/>
+        `;
       });
-  }
-
-  const name = r.offer?.name || `Offer #${id}`;
-
-  html += `🔹 [${id}] ${name}<br/>
-    Лиды: ${r.conversions ?? 0} / CR: ${r.cr ?? 0}% / CPL: $${r.cpa ?? 0} / Аппрув: ${r.approve ?? 0}%<br/>
-    🔗 <a href="https://lponlineshop.site/admin/?object=offers.preview&id=${id}" target="_blank">Промо</a><br/><br/>
-  `;
-});
-
 
       html += `</div></details>`;
     }
@@ -192,10 +189,8 @@ function renderTasks() {
 
     if (task.done) {
       doneEl.appendChild(el);
-      console.log(`✅ "${task.name}" → в Готово`);
     } else {
       workingEl.appendChild(el);
-      console.log(`⏳ "${task.name}" → в Работе`);
     }
   });
 }
