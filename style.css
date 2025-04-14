@@ -178,3 +178,6 @@ body {
   color: #4cafef;
   text-decoration: underline;
 }
+.hidden-column {
+  display: none !important;
+}
