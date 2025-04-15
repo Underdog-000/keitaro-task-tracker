@@ -8,7 +8,11 @@ export default async function handler(req, res) {
     'Api-Key': apiKey,
     'Content-Type': 'application/json',
     'Accept': 'application/json'
-  };
+  console.log('🟡 Кол-во строк в отчёте:', rows.length);
+rows.forEach(r => {
+  const offerId = r.offer?.id;
+  console.log(`🔸 Offer ID из отчёта:`, offerId);
+});
 
   try {
     // 1. Получаем отчёт
@@ -52,7 +56,16 @@ export default async function handler(req, res) {
       if (offerId && offersMap[offerId]) {
         row.offer.name = offersMap[offerId];
       }
-    });
+    rows.forEach(row => {
+  const offerId = row.offer?.id;
+  if (offerId && offersMap[offerId]) {
+    row.offer.name = offersMap[offerId];
+    console.log(`🟢 Обогащено имя оффера [${offerId}]: ${row.offer.name}`);
+  } else {
+    console.warn(`⚠️ Имя не найдено для оффера [${offerId}]`);
+  }
+});
+
 
     // 4. Собираем summary
     const summary = rows.reduce((acc, row) => {
