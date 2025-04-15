@@ -195,21 +195,22 @@ content += `Подтв. доход(Кампании): $${format(summary.sale_rev
   content += `CPM:\n\n`;
 
   rows.forEach(row => {
-    const id = row.offer_id ?? row.offer?.id ?? '—';
-    const name = row.offer?.name || row.offer || `Offer #${id}`;
-    const approved = Math.round((row.approve ?? 0) * (row.conversions ?? 0) / 100);
-    const rev = approved * (row.cpa ?? 0);
+  const id = row.offer_id ?? row.offer?.id ?? '—';
+  const name = row.offer?.name || row.offer || `Offer #${id}`;
+  const approved = Math.round((row.approve ?? 0) * (row.conversions ?? 0) / 100);
+  const rev = row.sale_revenue ?? 0; // ✅ теперь правильный доход
 
-    content += `Offer: [${id}] ${name}\n`;
-    content += `CR: ${format(row.cr)}%\n`;
-    content += `CPL: $${format(row.cpa)}\n`;
-    content += `Аппрув: ${format(row.approve)}%\n`;
-    content += `CPC: $${format(row.cpc)}\n`;
-    content += `Аппрувы: ${approved}\n`;
-    content += `Конверсии: ${row.conversions ?? 0}\n`;
-    content += `Спенд: $${format(row.cost, 4)}\n`;
-    content += `Подтв. доход: $${format(rev)}\n\n`;
-  });
+  content += `Offer: [${id}] ${name}\n`;
+  content += `CR: ${format(row.cr)}%\n`;
+  content += `CPL: $${format(row.cpa)}\n`;
+  content += `Аппрув: ${format(row.approve)}%\n`;
+  content += `CPC: $${format(row.cpc)}\n`;
+  content += `Аппрувы: ${approved}\n`;
+  content += `Конверсии: ${row.conversions ?? 0}\n`;
+  content += `Спенд: $${format(row.cost, 4)}\n`;
+  content += `Подтв. доход: $${format(rev)}\n\n`;
+});
+
 
   const links = rows
     .map(r => r.offer_id ?? r.offer?.id)
