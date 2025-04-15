@@ -12,13 +12,13 @@ export default async function handler(req, res) {
   };
 
   try {
-    // 1. Получаем отчёт
+    // 1. Получаем отчёт с offer_id
     const response = await fetch('https://lponlineshop.site/admin_api/v1/report/build', {
       method: 'POST',
       headers,
       body: JSON.stringify({
         range: { from, to, timezone: "Europe/Moscow" },
-        columns: [],
+        columns: ["offer_id"],
         metrics: ["conversions", "cr", "approve", "cpc", "cpa", "cost"],
         grouping: ["offer"],
         filters: [{ name: "campaign_id", operator: "EQUALS", expression: String(campaignId) }],
@@ -36,8 +36,7 @@ export default async function handler(req, res) {
 
     console.log('🟡 Кол-во строк в отчёте:', rows.length);
     rows.forEach(r => {
-      const rawOffer = typeof r.offer === 'string' ? r.offer : JSON.stringify(r.offer);
-      console.log(`🔸 Offer в отчёте:`, rawOffer);
+      console.log(`🔸 Offer в отчёте:`, typeof r.offer === 'string' ? r.offer : JSON.stringify(r.offer));
     });
 
     // 2. Получаем структуру кампании для извлечения имён офферов
@@ -53,10 +52,13 @@ export default async function handler(req, res) {
       }
     }
 
-    // 3. Обогащаем офферы в отчёте + фиксируем строковые значения
+    // 3. Обогащаем офферы в отчёте и приклеиваем id
     rows.forEach(row => {
       if (typeof row.offer === 'string') {
-        row.offer = { id: null, name: row.offer };
+        row.offer = {
+          id: row.offer_id ?? null,
+          name: row.offer
+        };
       }
 
       const offerId = row.offer?.id;
