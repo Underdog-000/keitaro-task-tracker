@@ -144,6 +144,29 @@ function deleteTask(index) {
   renderTasks();
 }
 
+function exportCSV(index) {
+  const task = tasks[index];
+  if (!task || !task.report || !task.report.rows) return;
+
+  let csv = `Кампания: ${task.name}\nГео: ${task.geo}\n\n`;
+  task.report.rows.forEach(r => {
+    const name = r.offer?.name || '—';
+    csv += `Offer: ${name}\n`;
+    csv += `CR: ${r.cr ?? '—'}%\n`;
+    csv += `CPL: $${r.cpa ?? '—'}\n`;
+    csv += `Аппрув: ${r.approve ?? '—'}%\n`;
+    csv += `Конверсии: ${r.conversions ?? 0}\n`;
+    csv += `Спенд: $${r.cost ?? 0}\n\n`;
+  });
+
+  const popup = window.open('', '_blank', 'width=600,height=400');
+  popup.document.write('<html><head><title>CSV отчёт</title></head><body>');
+  popup.document.write('<h3>📋 CSV Отчёт</h3>');
+  popup.document.write('<textarea style="width:100%; height:90%;">' + csv + '</textarea>');
+  popup.document.write('</body></html>');
+  popup.document.close();
+}
+
 function renderTasks() {
   const workingEl = document.getElementById('workingTasks');
   const doneEl = document.getElementById('doneTasks');
@@ -169,7 +192,7 @@ function renderTasks() {
     `;
 
     if (task.done && task.report && task.report.rows) {
-      html += `<details><summary>📊 Отчёт</summary><div style="font-size: 0.9em; padding-top: 8px;">`;
+      html += `<details><summary>📊 Отчёт <button onclick="event.stopPropagation(); exportCSV(${i})">📥 CSV</button></summary><div style="font-size: 0.9em; padding-top: 8px;">`;
 
       const total = task.report.summary || {};
       const conversions = total.conversions ?? 0;
