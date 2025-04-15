@@ -168,13 +168,15 @@ function exportCSV(index) {
 
   const summary = task.report.summary || {};
   const rows = task.report.rows || [];
-
+  const startDate = new Date(task.startISO).toLocaleDateString('ru-RU');
+const endDate = new Date(task.endTime || new Date()).toLocaleDateString('ru-RU');
   const format = (v, digits = 2) => isNaN(v) ? '—' : Number(v).toFixed(digits);
 
   let content = `📋 CSV Отчёт\n\n`;
   content += `Кампания: ${task.name}\n`; // Название задачи
   content += `Гео: ${task.geo}\n\n`;
-
+  reportText += `📅 Начало: ${startDate}\n`;
+reportText += `📅 Завершено: ${endDate}\n\n`;
   content += `Спенд(Кампании): $${format(summary.cost)}\n`;
 content += `Лиды(Кампании): ${summary.conversions ?? 0}\n`;
 content += `CPL(Кампании): ${format(summary.cpl)}\n`;
