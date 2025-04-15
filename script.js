@@ -168,31 +168,46 @@ function exportCSV(index) {
 
   const summary = task.report.summary || {};
   const rows = task.report.rows || [];
+
   const startDate = new Date(task.startISO).toLocaleDateString('ru-RU');
-const endDate = (task.endTime || '').split(',')[0] || '—';
+  const endDate = (task.endTime || '').split(',')[0] || '—';
   const format = (v, digits = 2) => isNaN(v) ? '—' : Number(v).toFixed(digits);
 
+  // 📊 Подсчёт доп. метрик кампании
+  const approvedLeads = Math.round((summary.approve ?? 0) * (summary.conversions ?? 0) / 100);
+  const revenue = approvedLeads * (summary.cpa ?? 0);
+
   let content = `📋 CSV Отчёт\n\n`;
-  content += `Кампания: ${task.name}\n`; // Название задачи
+  content += `Кампания: ${task.name}\n`;
   content += `Гео: ${task.geo}\n`;
   content += `📅 Начало: ${startDate}\n`;
-content += `📅 Завершено: ${endDate}\n\n`;
+  content += `📅 Завершено: ${endDate}\n\n`;
+
   content += `Спенд(Кампании): $${format(summary.cost)}\n`;
-content += `Лиды(Кампании): ${summary.conversions ?? 0}\n`;
-content += `CPL(Кампании): ${format(summary.cpl)}\n`;
-content += `CR(Кампании): ${format(summary.cr)}%\n`;
-content += `Аппрув(Кампании): ${format(summary.approve)}%\n`;
+  content += `Лиды(Кампании): ${summary.conversions ?? 0}\n`;
+  content += `CPL(Кампании): ${format(summary.cpl)}\n`;
+  content += `CR(Кампании): ${format(summary.cr)}%\n`;
+  content += `Аппрув(Кампании): ${format(summary.approve)}%\n`;
+  content += `CPC(Кампании): $${format(summary.cpc)}\n`;
+  content += `Аппрувы(Кампании): ${approvedLeads}\n`;
+  content += `Подтв. доход(Кампании): $${format(revenue)}\n`;
   content += `CPM:\n\n`;
 
   rows.forEach(row => {
     const id = row.offer_id ?? row.offer?.id ?? '—';
     const name = row.offer?.name || row.offer || `Offer #${id}`;
+    const approved = Math.round((row.approve ?? 0) * (row.conversions ?? 0) / 100);
+    const rev = approved * (row.cpa ?? 0);
+
     content += `Offer: [${id}] ${name}\n`;
     content += `CR: ${format(row.cr)}%\n`;
     content += `CPL: $${format(row.cpa)}\n`;
     content += `Аппрув: ${format(row.approve)}%\n`;
+    content += `CPC: $${format(row.cpc)}\n`;
+    content += `Аппрувы: ${approved}\n`;
     content += `Конверсии: ${row.conversions ?? 0}\n`;
-    content += `Спенд: $${format(row.cost, 4)}\n\n`;
+    content += `Спенд: $${format(row.cost, 4)}\n`;
+    content += `Подтв. доход: $${format(rev)}\n\n`;
   });
 
   const links = rows
@@ -209,6 +224,7 @@ content += `Аппрув(Кампании): ${format(summary.approve)}%\n`;
   win.document.write(`<pre style="white-space: pre-wrap; font-family: monospace;">${content}</pre>`);
   win.document.title = 'CSV Отчёт';
 }
+
 
 
 function renderTasks() {
