@@ -90,14 +90,17 @@ body {
   background: #3a3a4d;
   border-radius: 8px;
   padding: 10px;
-  height: 100px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 8px;
+  min-height: 120px;
 }
 
 .task-card .actions {
-  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: auto;
 }
 
 .task-card button {
@@ -133,6 +136,7 @@ body {
 .modal-content label {
   display: block;
   margin-top: 15px;
+  font-weight: 500;
 }
 
 .modal-content input, select {
@@ -145,13 +149,26 @@ body {
   border-radius: 6px;
 }
 
+.modal-content input[type="radio"] {
+  width: auto;
+  margin-right: 5px;
+}
+
+.modal-content label[for="startNow"],
+.modal-content label[for="startCustom"] {
+  display: inline-block;
+  margin-right: 10px;
+  margin-top: 10px;
+  font-weight: normal;
+}
+
 .modal-actions {
   margin-top: 20px;
   display: flex;
   gap: 10px;
   justify-content: flex-end;
 }
-/* 👇 Гарантируем, что task-lists не схлопываются */
+
 #workingTasks, #doneTasks {
   min-height: 50px;
   display: flex;
@@ -159,7 +176,6 @@ body {
   gap: 10px;
 }
 
-/* 👇 Аккуратный стиль для <details> блока отчета */
 .task-card details {
   background: #444456;
   border-radius: 6px;
@@ -178,6 +194,7 @@ body {
   color: #4cafef;
   text-decoration: underline;
 }
+
 .hidden-column {
   display: none !important;
 }
