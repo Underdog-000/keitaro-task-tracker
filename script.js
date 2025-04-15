@@ -5,6 +5,10 @@ function getMoscowTimeString(date = new Date()) {
   return date.toLocaleString("ru-RU", { timeZone: "Europe/Moscow" });
 }
 
+function getMoscowDateOnly(date = new Date()) {
+  return date.toLocaleDateString("ru-RU", { timeZone: "Europe/Moscow" });
+}
+
 function saveTasks() {
   localStorage.setItem('keitaro_tasks', JSON.stringify(tasks));
 }
@@ -101,6 +105,7 @@ function createTask() {
   }
 
   const startTime = getMoscowTimeString(startDate);
+  const startDateOnly = getMoscowDateOnly(startDate);
   const startISO = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString();
 
   const task = {
@@ -110,6 +115,7 @@ function createTask() {
     campaignId,
     campaignName,
     startTime,
+    startDateOnly,
     startISO,
     done: false
   };
@@ -118,91 +124,6 @@ function createTask() {
   saveTasks();
   renderTasks();
   closeModal();
-}
-
-async function completeTask(index) {
-  const task = tasks[index];
-  const endTime = getMoscowTimeString();
-  const endISO = new Date().toISOString();
-
-  try {
-    const res = await fetch('/api/report', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        campaignId: task.campaignId,
-        from: task.startISO,
-        to: endISO
-      })
-    });
-
-    const report = await res.json();
-
-    tasks[index].done = true;
-    tasks[index].endTime = endTime;
-    tasks[index].report = report;
-    saveTasks();
-    renderTasks();
-  } catch (err) {
-    console.error("Ошибка при завершении задачи:", err);
-  }
-}
-
-function deleteTask(index) {
-  if (!confirm("Удалить задачу?")) return;
-  tasks.splice(index, 1);
-  saveTasks();
-  renderTasks();
-}
-
-function exportCSV(index) {
-  const task = tasks[index];
-  if (!task || !task.report || !task.report.rows) return;
-
-  const total = task.report.summary || {};
-  const conversions = total.conversions ?? 0;
-  const cost = total.cost ?? 0;
-  const cr = total.cr ?? '0';
-  const approve = total.approve ?? '—';
-  const cpl = conversions ? (cost / conversions).toFixed(2) : '—';
-
-  let csv = `Кампания: ${task.name}\nГео: ${task.geo}\n\n`;
-  csv += `Спенд(Кампании): $${cost}\n`;
-  csv += `Лиды(Кампании): ${conversions}\n`;
-  csv += `CPL(Кампании): $${cpl}\n`;
-  csv += `CR(Кампании): ${cr}%\n`;
-  csv += `Аппрув(Кампании): ${approve}%\n`;
-  csv += `CPM: \n\n`;
-
-  const promoLinks = [];
-
-  task.report.rows.forEach(r => {
-    const offerId = r.offer?.id;
-    const name = r.offer?.name || '—';
-    const displayName = offerId ? `[${offerId}] ${name}` : name;
-
-    csv += `Offer: ${displayName}\n`;
-    csv += `CR: ${r.cr ?? '—'}%\n`;
-    csv += `CPL: $${r.cpa ?? '—'}\n`;
-    csv += `Аппрув: ${r.approve ?? '—'}%\n`;
-    csv += `Конверсии: ${r.conversions ?? 0}\n`;
-    csv += `Спенд: $${r.cost ?? 0}\n\n`;
-
-    if (offerId) {
-      promoLinks.push(`https://lponlineshop.site/admin/?object=offers.preview&id=${offerId}`);
-    }
-  });
-
-  if (promoLinks.length > 0) {
-    csv += `🔗 Промо-ссылки:\n` + promoLinks.join('\n') + '\n';
-  }
-
-  const popup = window.open('', '_blank', 'width=600,height=500');
-  popup.document.write('<html><head><title>CSV отчёт</title></head><body>');
-  popup.document.write('<h3>📋 CSV Отчёт</h3>');
-  popup.document.write('<textarea style="width:100%; height:90%; white-space:pre-wrap">' + csv + '</textarea>');
-  popup.document.write('</body></html>');
-  popup.document.close();
 }
 
 function renderTasks() {
@@ -221,6 +142,7 @@ function renderTasks() {
            Гео: ${task.geo}<br/>
            Кампания: ${task.campaignName}
       </div>
+      <div style="font-size: 0.9em; color: #bbb;">🕒 Старт: ${task.startDateOnly}</div>
       <div class="actions">
         ${task.done
           ? `🕒 ${task.startTime} → ${task.endTime || '—'}`
@@ -263,21 +185,3 @@ function renderTasks() {
     task.done ? doneEl.appendChild(el) : workingEl.appendChild(el);
   });
 }
-
-function toggleColumn(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const isHidden = getComputedStyle(el).display === 'none';
-  el.style.display = isHidden ? 'flex' : 'none';
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-  const storedKey = localStorage.getItem('keitaro_api_key');
-  if (storedKey) {
-    document.getElementById('apiKeyInput').value = storedKey;
-    fetchCampaignsAndGroups();
-  }
-
-  loadTasks();
-  renderTasks();
-});
