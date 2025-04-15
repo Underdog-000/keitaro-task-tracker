@@ -27,7 +27,7 @@ module.exports = async function handler(req, res) {
           operator: "EQUALS",
           expression: String(campaignId)
         }],
-        limit: 100
+        limit: 100,
         summary: true
       })
     });
