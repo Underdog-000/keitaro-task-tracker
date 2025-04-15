@@ -1,3 +1,4 @@
+// report.js
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).send('Only POST allowed');
 
@@ -35,8 +36,8 @@ export default async function handler(req, res) {
 
     console.log('🟡 Кол-во строк в отчёте:', rows.length);
     rows.forEach(r => {
-      const offerId = r.offer?.id;
-      console.log(`🔸 Offer ID из отчёта:`, offerId);
+      const rawOffer = typeof r.offer === 'string' ? r.offer : JSON.stringify(r.offer);
+      console.log(`🔸 Offer в отчёте:`, rawOffer);
     });
 
     // 2. Получаем структуру кампании для извлечения имён офферов
@@ -52,8 +53,12 @@ export default async function handler(req, res) {
       }
     }
 
-    // 3. Обогащаем офферы в отчёте + логируем результат
+    // 3. Обогащаем офферы в отчёте + фиксируем строковые значения
     rows.forEach(row => {
+      if (typeof row.offer === 'string') {
+        row.offer = { id: null, name: row.offer };
+      }
+
       const offerId = row.offer?.id;
       if (offerId && offersMap[offerId]) {
         row.offer.name = offersMap[offerId];
