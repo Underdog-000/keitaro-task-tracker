@@ -169,25 +169,28 @@ function exportCSV(index) {
   const summary = task.report.summary || {};
   const rows = task.report.rows || [];
 
-  let content = `📋 CSV Отчёт\n\n`;
-  content += `Кампания: ${task.campaignId}\nГео: ${task.geo}\n\n`;
+  const format = (v, digits = 2) => isNaN(v) ? '—' : Number(v).toFixed(digits);
 
-  content += `Спенд(Кампании): $${summary.cost ?? 0}\n`;
+  let content = `📋 CSV Отчёт\n\n`;
+  content += `Кампания: ${task.name}\n`; // Название задачи
+  content += `Гео: ${task.geo}\n\n`;
+
+  content += `Спенд(Кампании): $${format(summary.cost)}\n`;
   content += `Лиды(Кампании): ${summary.conversions ?? 0}\n`;
-  content += `CPL(Кампании): ${summary.cpl ?? '—'}\n`;
-  content += `CR(Кампании): ${summary.cr ?? '—'}%\n`;
-  content += `Аппрув(Кампании): ${summary.approve ?? '—'}%\n`;
+  content += `CPL(Кампании): ${format(summary.cpl)}\n`;
+  content += `CR(Кампании): ${format(summary.cr)}%\n`;
+  content += `Аппрув(Кампании): ${format(summary.approve)}%\n`;
   content += `CPM:\n\n`;
 
   rows.forEach(row => {
     const id = row.offer_id ?? row.offer?.id ?? '—';
     const name = row.offer?.name || row.offer || `Offer #${id}`;
     content += `Offer: [${id}] ${name}\n`;
-    content += `CR: ${row.cr ?? 0}%\n`;
-    content += `CPL: $${row.cpa ?? 0}\n`;
-    content += `Аппрув: ${row.approve ?? 0}%\n`;
+    content += `CR: ${format(row.cr)}%\n`;
+    content += `CPL: $${format(row.cpa)}\n`;
+    content += `Аппрув: ${format(row.approve)}%\n`;
     content += `Конверсии: ${row.conversions ?? 0}\n`;
-    content += `Спенд: $${row.cost ?? 0}\n\n`;
+    content += `Спенд: $${format(row.cost, 4)}\n\n`;
   });
 
   const links = rows
@@ -204,6 +207,7 @@ function exportCSV(index) {
   win.document.write(`<pre style="white-space: pre-wrap; font-family: monospace;">${content}</pre>`);
   win.document.title = 'CSV Отчёт';
 }
+
 
 function renderTasks() {
   const workingEl = document.getElementById('workingTasks');
