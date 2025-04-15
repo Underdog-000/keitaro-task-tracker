@@ -148,7 +148,21 @@ function exportCSV(index) {
   const task = tasks[index];
   if (!task || !task.report || !task.report.rows) return;
 
+  const total = task.report.summary || {};
+  const conversions = total.conversions ?? 0;
+  const cost = total.cost ?? 0;
+  const cr = total.cr ?? '0';
+  const approve = total.approve ?? '—';
+  const cpl = conversions ? (cost / conversions).toFixed(2) : '—';
+
   let csv = `Кампания: ${task.name}\nГео: ${task.geo}\n\n`;
+  csv += `Спенд(Кампании): $${cost}\n`;
+  csv += `Лиды(Кампании): ${conversions}\n`;
+  csv += `CPL(Кампании): $${cpl}\n`;
+  csv += `CR(Кампании): ${cr}%\n`;
+  csv += `Аппрув(Кампании): ${approve}%\n`;
+  csv += `CPM: \n\n`;
+
   task.report.rows.forEach(r => {
     const name = r.offer?.name || '—';
     csv += `Offer: ${name}\n`;
@@ -159,10 +173,10 @@ function exportCSV(index) {
     csv += `Спенд: $${r.cost ?? 0}\n\n`;
   });
 
-  const popup = window.open('', '_blank', 'width=600,height=400');
+  const popup = window.open('', '_blank', 'width=600,height=500');
   popup.document.write('<html><head><title>CSV отчёт</title></head><body>');
   popup.document.write('<h3>📋 CSV Отчёт</h3>');
-  popup.document.write('<textarea style="width:100%; height:90%;">' + csv + '</textarea>');
+  popup.document.write('<textarea style="width:100%; height:90%; white-space:pre-wrap">' + csv + '</textarea>');
   popup.document.write('</body></html>');
   popup.document.close();
 }
