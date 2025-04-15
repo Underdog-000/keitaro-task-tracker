@@ -125,6 +125,85 @@ function createTask() {
   renderTasks();
   closeModal();
 }
+async function completeTask(index) {
+  const task = tasks[index];
+  const endTime = getMoscowTimeString();
+  const endISO = new Date().toISOString();
+
+  try {
+    const res = await fetch('/api/report', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        campaignId: task.campaignId,
+        from: task.startISO,
+        to: endISO
+      })
+    });
+
+    const report = await res.json();
+
+    tasks[index].done = true;
+    tasks[index].endTime = endTime;
+    tasks[index].report = report;
+
+    saveTasks();
+    renderTasks();
+  } catch (err) {
+    console.error("Ошибка при завершении задачи:", err);
+  }
+}
+
+function deleteTask(index) {
+  if (confirm("Удалить задачу?")) {
+    tasks.splice(index, 1);
+    saveTasks();
+    renderTasks();
+  }
+}
+
+function exportCSV(index) {
+  const task = tasks[index];
+  if (!task || !task.done || !task.report) return;
+
+  const summary = task.report.summary || {};
+  const rows = task.report.rows || [];
+
+  let content = `📋 CSV Отчёт\n\n`;
+  content += `Кампания: ${task.campaignId}\nГео: ${task.geo}\n\n`;
+
+  content += `Спенд(Кампании): $${summary.cost ?? 0}\n`;
+  content += `Лиды(Кампании): ${summary.conversions ?? 0}\n`;
+  content += `CPL(Кампании): ${summary.cpl ?? '—'}\n`;
+  content += `CR(Кампании): ${summary.cr ?? '—'}%\n`;
+  content += `Аппрув(Кампании): ${summary.approve ?? '—'}%\n`;
+  content += `CPM:\n\n`;
+
+  rows.forEach(row => {
+    const id = row.offer_id ?? row.offer?.id ?? '—';
+    const name = row.offer?.name || row.offer || `Offer #${id}`;
+    content += `Offer: [${id}] ${name}\n`;
+    content += `CR: ${row.cr ?? 0}%\n`;
+    content += `CPL: $${row.cpa ?? 0}\n`;
+    content += `Аппрув: ${row.approve ?? 0}%\n`;
+    content += `Конверсии: ${row.conversions ?? 0}\n`;
+    content += `Спенд: $${row.cost ?? 0}\n\n`;
+  });
+
+  const links = rows
+    .map(r => r.offer_id ?? r.offer?.id)
+    .filter(id => id)
+    .map(id => `https://lponlineshop.site/admin/?object=offers.preview&id=${id}`)
+    .join('\n');
+
+  if (links) {
+    content += `🔗 Промо-ссылки:\n${links}\n`;
+  }
+
+  const win = window.open('', '_blank');
+  win.document.write(`<pre style="white-space: pre-wrap; font-family: monospace;">${content}</pre>`);
+  win.document.title = 'CSV Отчёт';
+}
 
 function renderTasks() {
   const workingEl = document.getElementById('workingTasks');
@@ -169,10 +248,10 @@ function renderTasks() {
       `;
 
       task.report.rows.forEach(r => {
-        const id = r.offer?.id;
-        const name = r.offer?.name || (id ? `Offer #${id}` : 'Без имени');
+        const id = r.offer_id ?? r.offer?.id ?? '—';
+        const name = r.offer?.name || r.offer || `Offer #${id}`;
 
-        html += `🔹 [${id ?? '—'}] ${name}<br/>
+        html += `🔹 [${id}] ${name}<br/>
           Лиды: ${r.conversions ?? 0} / CR: ${r.cr ?? 0}% / CPL: $${r.cpa ?? 0} / Аппрув: ${r.approve ?? 0}%<br/>
           ${id ? `🔗 <a href="https://lponlineshop.site/admin/?object=offers.preview&id=${id}" target="_blank">Промо</a><br/><br/>` : ''}
         `;
@@ -186,21 +265,19 @@ function renderTasks() {
   });
 }
 
+function toggleColumn(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const isHidden = getComputedStyle(el).display === 'none';
+  el.style.display = isHidden ? 'flex' : 'none';
+}
 
- function toggleColumn(id) {
-   const el = document.getElementById(id);
-   if (!el) return;
-   const isHidden = getComputedStyle(el).display === 'none';
-   el.style.display = isHidden ? 'flex' : 'none';
- }
- 
- window.addEventListener('DOMContentLoaded', () => {
-   const storedKey = localStorage.getItem('keitaro_api_key');
-   if (storedKey) {
-     document.getElementById('apiKeyInput').value = storedKey;
-     fetchCampaignsAndGroups();
-   }
- 
-   loadTasks();
-   renderTasks();
- });
+window.addEventListener('DOMContentLoaded', () => {
+  const storedKey = localStorage.getItem('keitaro_api_key');
+  if (storedKey) {
+    document.getElementById('apiKeyInput').value = storedKey;
+    fetchCampaignsAndGroups();
+  }
+  loadTasks();
+  renderTasks();
+});
