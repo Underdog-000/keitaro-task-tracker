@@ -163,6 +163,8 @@ function exportCSV(index) {
   csv += `Аппрув(Кампании): ${approve}%\n`;
   csv += `CPM: \n\n`;
 
+  const promoLinks = [];
+
   task.report.rows.forEach(r => {
     const name = r.offer?.name || '—';
     csv += `Offer: ${name}\n`;
@@ -171,7 +173,15 @@ function exportCSV(index) {
     csv += `Аппрув: ${r.approve ?? '—'}%\n`;
     csv += `Конверсии: ${r.conversions ?? 0}\n`;
     csv += `Спенд: $${r.cost ?? 0}\n\n`;
+
+    if (r.offer?.id) {
+      promoLinks.push(`https://lponlineshop.site/admin/?object=offers.preview&id=${r.offer.id}`);
+    }
   });
+
+  if (promoLinks.length > 0) {
+    csv += `🔗 Промо-ссылки:\n` + promoLinks.join('\n') + '\n';
+  }
 
   const popup = window.open('', '_blank', 'width=600,height=500');
   popup.document.write('<html><head><title>CSV отчёт</title></head><body>');
