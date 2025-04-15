@@ -185,3 +185,22 @@ function renderTasks() {
     task.done ? doneEl.appendChild(el) : workingEl.appendChild(el);
   });
 }
+
+
+ function toggleColumn(id) {
+   const el = document.getElementById(id);
+   if (!el) return;
+   const isHidden = getComputedStyle(el).display === 'none';
+   el.style.display = isHidden ? 'flex' : 'none';
+ }
+ 
+ window.addEventListener('DOMContentLoaded', () => {
+   const storedKey = localStorage.getItem('keitaro_api_key');
+   if (storedKey) {
+     document.getElementById('apiKeyInput').value = storedKey;
+     fetchCampaignsAndGroups();
+   }
+ 
+   loadTasks();
+   renderTasks();
+ });
