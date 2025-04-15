@@ -176,10 +176,10 @@ function exportCSV(index) {
   content += `Гео: ${task.geo}\n\n`;
 
   content += `Спенд(Кампании): $${format(summary.cost)}\n`;
-  content += `Лиды(Кампании): ${summary.conversions ?? 0}\n`;
-  content += `CPL(Кампании): ${format(summary.cpl)}\n`;
-  content += `CR(Кампании): ${format(summary.cr)}%\n`;
-  content += `Аппрув(Кампании): ${format(summary.approve)}%\n`;
+content += `Лиды(Кампании): ${summary.conversions ?? 0}\n`;
+content += `CPL(Кампании): ${format(summary.cpl)}\n`;
+content += `CR(Кампании): ${format(summary.cr)}%\n`;
+content += `Аппрув(Кампании): ${format(summary.approve)}%\n`;
   content += `CPM:\n\n`;
 
   rows.forEach(row => {
