@@ -166,16 +166,19 @@ function exportCSV(index) {
   const promoLinks = [];
 
   task.report.rows.forEach(r => {
+    const offerId = r.offer?.id;
     const name = r.offer?.name || '—';
-    csv += `Offer: ${name}\n`;
+    const displayName = offerId ? `[${offerId}] ${name}` : name;
+
+    csv += `Offer: ${displayName}\n`;
     csv += `CR: ${r.cr ?? '—'}%\n`;
     csv += `CPL: $${r.cpa ?? '—'}\n`;
     csv += `Аппрув: ${r.approve ?? '—'}%\n`;
     csv += `Конверсии: ${r.conversions ?? 0}\n`;
     csv += `Спенд: $${r.cost ?? 0}\n\n`;
 
-    if (r.offer?.id) {
-      promoLinks.push(`https://lponlineshop.site/admin/?object=offers.preview&id=${r.offer.id}`);
+    if (offerId) {
+      promoLinks.push(`https://lponlineshop.site/admin/?object=offers.preview&id=${offerId}`);
     }
   });
 
