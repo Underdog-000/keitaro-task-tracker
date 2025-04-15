@@ -1,4 +1,3 @@
-// report.js
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).send('Only POST allowed');
 
@@ -12,14 +11,14 @@ export default async function handler(req, res) {
   };
 
   try {
-    // 1. Получаем отчёт с offer_id
+    // 1. Получаем отчёт
     const response = await fetch('https://lponlineshop.site/admin_api/v1/report/build', {
       method: 'POST',
       headers,
       body: JSON.stringify({
         range: { from, to, timezone: "Europe/Moscow" },
-        columns: ["offer_id"],
-        metrics: ["conversions", "cr", "approve", "cpc", "cpa", "cost"],
+        columns: [],
+        metrics: ["conversions", "cr", "approve", "cpc", "cpa", "cpl", "cost"],
         grouping: ["offer"],
         filters: [{ name: "campaign_id", operator: "EQUALS", expression: String(campaignId) }],
         limit: 100
@@ -34,12 +33,7 @@ export default async function handler(req, res) {
     const report = await response.json();
     const rows = report.rows || [];
 
-    console.log('🟡 Кол-во строк в отчёте:', rows.length);
-    rows.forEach(r => {
-      console.log(`🔸 Offer в отчёте:`, typeof r.offer === 'string' ? r.offer : JSON.stringify(r.offer));
-    });
-
-    // 2. Получаем структуру кампании для извлечения имён офферов
+    // 2. Получаем структуру кампании (чтобы вытащить названия офферов)
     const campaignRes = await fetch(`https://lponlineshop.site/admin_api/v1/campaigns/${campaignId}`, { headers });
     const campaign = await campaignRes.json();
 
@@ -52,33 +46,17 @@ export default async function handler(req, res) {
       }
     }
 
-    // 3. Обогащаем офферы в отчёте и приклеиваем id
+    // 3. Обогащаем офферы в rows
     rows.forEach(row => {
-      if (typeof row.offer === 'string') {
-        row.offer = {
-          id: row.offer_id ?? null,
-          name: row.offer
-        };
-      }
-
-      const offerId = row.offer?.id;
+      const offerId = row.offer_id ?? row.offer?.id;
+      if (!row.offer) row.offer = {};
       if (offerId && offersMap[offerId]) {
         row.offer.name = offersMap[offerId];
-        console.log(`🟢 Обогащено имя оффера [${offerId}]: ${row.offer.name}`);
-      } else {
-        console.warn(`⚠️ Имя не найдено для оффера [${offerId}]`);
+        row.offer.id = offerId;
       }
     });
 
-    // 4. Собираем summary
-    const summary = rows.reduce((acc, row) => {
-      acc.conversions += row.conversions ?? 0;
-      acc.cost += row.cost ?? 0;
-      return acc;
-    }, { conversions: 0, cost: 0 });
-
-    summary.cr = summary.conversions ? ((summary.conversions / rows.length) * 100).toFixed(2) : 0;
-    summary.cpl = summary.conversions ? (summary.cost / summary.conversions).toFixed(2) : 0;
+    const summary = report.summary || {};
 
     res.status(200).json({ rows, summary });
   } catch (err) {
