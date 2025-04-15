@@ -120,29 +120,25 @@ console.warn(`⚠️ Имя не найдено для оффера [${offerId}]
 
 });
 
-// 4. Собираем summary
+// 4. Финальный summary — если нет в API, считаем вручную
+let summary = report.summary;
 
-const summary = rows.reduce((acc, row) => {
+if (!summary || !summary.cost) {
+  summary = rows.reduce((acc, row) => {
+    acc.conversions += row.conversions ?? 0;
+    acc.cost += row.cost ?? 0;
+    acc.crSum += (row.cr ?? 0) * (row.conversions ?? 0);
+    acc.approveSum += (row.approve ?? 0) * (row.conversions ?? 0);
+    return acc;
+  }, { conversions: 0, cost: 0, crSum: 0, approveSum: 0 });
 
-acc.conversions += row.conversions ?? 0;
-
-acc.cost += row.cost ?? 0;
-
-return acc;
-
-}, { conversions: 0, cost: 0 });
-
-summary.cr = summary.conversions ? ((summary.conversions / rows.length) * 100).toFixed(2) : 0;
-
-summary.cpl = summary.conversions ? (summary.cost / summary.conversions).toFixed(2) : 0;
+  summary.cr = summary.conversions ? (summary.crSum / summary.conversions).toFixed(2) : '—';
+  summary.approve = summary.conversions ? (summary.approveSum / summary.conversions).toFixed(2) : '—';
+  summary.cpl = summary.conversions ? (summary.cost / summary.conversions).toFixed(2) : '—';
+}
 
 res.status(200).json({ rows, summary });
 
-} catch (err) {
-
-console.error("Ошибка в report.js:", err);
-
-res.status(500).json({ error: "Ошибка сервера", details: err.message });
 
 }
 
