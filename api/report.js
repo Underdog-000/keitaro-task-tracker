@@ -139,8 +139,8 @@ if (!summary || !summary.cost) {
 
 res.status(200).json({ rows, summary });
 
-
-
+} catch (err) {
+  console.error("Ошибка в report.js:", err);
+  res.status(500).json({ error: "Ошибка сервера", details: err.message });
 }
-
 }
