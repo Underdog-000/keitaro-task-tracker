@@ -1,8 +1,8 @@
 let tasks = [];
 let allCampaigns = [];
 
-function getMoscowTimeString() {
-  return new Date().toLocaleString("ru-RU", { timeZone: "Europe/Moscow" });
+function getMoscowTimeString(date = new Date()) {
+  return date.toLocaleString("ru-RU", { timeZone: "Europe/Moscow" });
 }
 
 function saveTasks() {
@@ -89,8 +89,19 @@ function createTask() {
   const geo = document.getElementById('geoInput').value;
   const campaignRaw = document.getElementById('campaignInput').value;
   const [campaignId, campaignName] = campaignRaw.split(' — ');
-  const startTime = getMoscowTimeString();
-  const startISO = new Date().toISOString();
+
+  const useCustom = document.getElementById('startCustom').checked;
+  let startDate = new Date();
+
+  if (useCustom) {
+    const raw = document.getElementById('startDatetime').value;
+    if (raw) {
+      startDate = new Date(raw);
+    }
+  }
+
+  const startTime = getMoscowTimeString(startDate);
+  const startISO = new Date(startDate.getTime() - startDate.getTimezoneOffset() * 60000).toISOString();
 
   const task = {
     name,
