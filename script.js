@@ -137,6 +137,13 @@ async function completeTask(index) {
   }
 }
 
+function deleteTask(index) {
+  if (!confirm("Удалить задачу?")) return;
+  tasks.splice(index, 1);
+  saveTasks();
+  renderTasks();
+}
+
 function renderTasks() {
   const workingEl = document.getElementById('workingTasks');
   const doneEl = document.getElementById('doneTasks');
@@ -157,6 +164,7 @@ function renderTasks() {
         ${task.done
           ? `🕒 ${task.startTime} → ${task.endTime || '—'}`
           : `<button onclick="completeTask(${i})">Завершить</button>`}
+        <button onclick="deleteTask(${i})">Удалить</button>
       </div>
     `;
 
