@@ -132,12 +132,13 @@ if (!summary || !summary.cost) {
     return acc;
   }, { conversions: 0, cost: 0, crSum: 0, approveSum: 0 });
 
-  summary.cr = summary.conversions ? (summary.crSum / summary.conversions).toFixed(2) : '—';
-  summary.approve = summary.conversions ? (summary.approveSum / summary.conversions).toFixed(2) : '—';
-  summary.cpl = summary.conversions ? (summary.cost / summary.conversions).toFixed(2) : '—';
+  summary.cr = summary.conversions ? +(summary.crSum / summary.conversions).toFixed(2) : null;
+  summary.approve = summary.conversions ? +(summary.approveSum / summary.conversions).toFixed(2) : null;
+  summary.cpl = summary.conversions ? +(summary.cost / summary.conversions).toFixed(2) : null;
 }
 
 res.status(200).json({ rows, summary });
+
 
 
 }
