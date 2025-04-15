@@ -28,6 +28,7 @@ module.exports = async function handler(req, res) {
           expression: String(campaignId)
         }],
         limit: 100
+        summary: true
       })
     });
 
