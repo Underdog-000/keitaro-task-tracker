@@ -49,8 +49,8 @@
       <input type="text" id="testName" />
     </label>
     <label>Гео:
-  <input type="text" id="geoInput" placeholder="Например, Мексика" />
-</label>
+      <input type="text" id="geoInput" placeholder="Например, Мексика" />
+    </label>
 
     <label>Группа кампаний:
       <select id="groupSelect">
@@ -63,13 +63,24 @@
       <datalist id="campaignList"></datalist>
     </label>
 
+    <label>
+      Время начала:
+      <div>
+        <input type="radio" name="startType" id="startNow" value="now" checked />
+        <label for="startNow">Сейчас</label>
+
+        <input type="radio" name="startType" id="startCustom" value="custom" />
+        <label for="startCustom">Указать вручную</label>
+      </div>
+      <input type="datetime-local" id="startDatetime" disabled />
+    </label>
+
     <div class="modal-actions">
       <button onclick="createTask()">Создать</button>
       <button onclick="closeModal()">Отмена</button>
     </div>
   </div>
 </div>
-
 
   <!-- Модальное окно настроек -->
   <div class="modal hidden" id="settingsModal">
@@ -87,5 +98,20 @@
   </div>
 
   <script src="script.js"></script>
+  <script>
+    // Включение/отключение datetime input
+    document.addEventListener('DOMContentLoaded', () => {
+      const nowRadio = document.getElementById('startNow');
+      const customRadio = document.getElementById('startCustom');
+      const dateInput = document.getElementById('startDatetime');
+
+      const toggleDatetime = () => {
+        dateInput.disabled = !customRadio.checked;
+      };
+
+      nowRadio.addEventListener('change', toggleDatetime);
+      customRadio.addEventListener('change', toggleDatetime);
+    });
+  </script>
 </body>
 </html>
